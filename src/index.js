@@ -1,5 +1,10 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const monggose = require('mongoose');
+import dotenv from 'dotenv';
+import connectDB from './db/db.js';
 
+
+
+connectDB();
+
+dotenv.config({
+    path: './env'
+})
