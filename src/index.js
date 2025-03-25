@@ -1,13 +1,10 @@
 import dotenv from 'dotenv';
 import connectDB from './db/db.js';
-import express from 'express';
+import { app } from './app.js'; // Import the app with all routes and middleware
 
 dotenv.config({
     path: './env'
 })
-
-const app = express();
-
 
 connectDB()
 .then(() => {
@@ -21,8 +18,4 @@ connectDB()
 })
 .catch((err) => {
     console.log("Error in mongo db connection", err);   
-})
-
-app.get('/', (req,res) => {
-    res.send(`server is running on port ${process.env.PORT || 8000}`);
 })

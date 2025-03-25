@@ -16,11 +16,10 @@ const uploadToCloudinary = async (localFilePath) => {
             folder: 'E_Rental',
         })
         console.log("File has been uploaded to cloudinary ",uploadResult.url);
-         // Delete the local file after successful upload
-         if (fs.existsSync(localFilePath)) {
-            fs.unlinkSync(localFilePath);
-            console.log("Local file deleted:", localFilePath);
-        }
+        
+        fs.unlinkSync(localFilePath);
+        console.log("Local file deleted:", localFilePath);
+        
 
         return uploadResult;
     }
