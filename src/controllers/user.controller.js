@@ -228,5 +228,23 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     )
 })
 
+const updateUserName = asyncHandler(async (req,res) => {
+    const user= req.user;
+    const {oldUsername, newUsername} = req.body;
+    if(!oldUsername || !newUsername){
+        throw new ApiError(400, "All fields are required")
+    }
+    if(user.username !== oldUsername){
+        throw new ApiError(400, "Old username is incorrect")
+    }
+    user.username = newUsername;
+    user.save({validateBeforeSave: false});
+    return res.status(200)
+    .json(
+        new ApiResponse(200,{}, "Username updated successfully")
+    )
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getCurrentUser };
+})
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getCurrentUser, updateUserName};
