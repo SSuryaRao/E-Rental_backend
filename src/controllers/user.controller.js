@@ -246,5 +246,37 @@ const updateUserName = asyncHandler(async (req,res) => {
 
 })
 
+const uploadAvatar = asyncHandler(async (req,res) => {
+    const avatarLocalPath = req.file?.path;
+    if(!avatarLocalPath){
+        throw new ApiError(400,'Avatar is required');
+    }
+    const avatar = await uploadToCloudinary(avatarLocalPath);
+    if(!avatar){
+        throw new ApiError(400,'Avatar upload failed');
+    }
+    const user= await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                avatar: avatar.url
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password -refreshToken")
+    if(!user){
+        throw new ApiError(404, "User not found")
+    }
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getCurrentUser, updateUserName};
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, {}, "Avatar uploaded successfully")
+    )
+})
+
+
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changePassword, getCurrentUser, updateUserName, uploadAvatar};
