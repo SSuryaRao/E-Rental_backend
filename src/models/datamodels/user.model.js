@@ -31,7 +31,16 @@ avatar: {
 },
 refreshToken: {
     type: String,
-}
+},
+typeOfCustomer :{
+    type: String,
+    default: "Customer"
+},
+sellerID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Seller',
+    unique: true
+  }
 },{timestamps: true
 });
 
