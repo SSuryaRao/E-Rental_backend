@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema({
-    sellerId: {
+    sellerID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Seller'
     },
@@ -20,11 +20,15 @@ const productSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    categoryId: {
+    categoryID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category'
+    },
+    image:{
+        type: String
     }
-});
+
+},{timestamps: true});
 
 
 export const Product = mongoose.model('Product', productSchema)

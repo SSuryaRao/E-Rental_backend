@@ -17,9 +17,10 @@ app.use(cors({
 // routes
 import { userRouter } from './routes/user.routes.js';
 import { sellerRouter } from './routes/seller.routes.js';
+import { productRouter } from './routes/product.routes.js';
 
 app.use('/api/v1/user',userRouter);
 app.use('/api/v1/seller',sellerRouter);
-
+app.use('/api/v1/product',productRouter);
 
 export { app }

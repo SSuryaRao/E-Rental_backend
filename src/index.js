@@ -19,3 +19,4 @@ connectDB()
 .catch((err) => {
     console.log("Error in mongo db connection", err);   
 })
+
