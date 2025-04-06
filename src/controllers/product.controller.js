@@ -77,4 +77,33 @@ const registerProduct = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, "Product registered successfully", product));
 });
 
-export { registerProduct };
+const productDetails = asyncHandler(async (req, res) => {
+    const { name, description } = req.body;
+
+    if (!name && !description) {
+        throw new ApiError(400, "at least one field is required");
+    }
+
+    const queryConditions = [];
+
+    if (name && typeof name === "string") {
+        queryConditions.push({ name: { $regex: name, $options: "i" } });
+    }
+
+    if (description && typeof description === "string") {
+        queryConditions.push({
+            description: { $regex: description, $options: "i" },
+        });
+    }
+
+    const products = await Product.find({ $or: queryConditions })
+        .populate("categoryID", "name")
+        .populate("sellerID", "storeName gstNumber address")
+        .exec();
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "product fetched successfully", products));
+});
+
+export { registerProduct, productDetails };
