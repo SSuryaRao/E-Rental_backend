@@ -7,6 +7,8 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
 
+  
+
 const generateAccessTokenAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId)
@@ -83,15 +85,15 @@ const loginUser = asyncHandler(async (req,res) => {
     //pasword check
     //generate access and refresh token
     //send the response
-    const {username,email,password} = req.body;
+    const {identifier,password} = req.body;
     // console.log("Request Headers:", req.headers);
     // console.log(req.body);
-    if ((!username && !email) || !password) {
+    if (!identifier || !password) {
         throw new ApiError(400, "Username or email and password are required");
     }
     
     const user = await User.findOne({
-        $or: [{email},{username}]
+        $or: [{email:identifier},{username:identifier}]
     })
     if(!user){
         throw new ApiError(400,'User not found');
@@ -105,11 +107,18 @@ const loginUser = asyncHandler(async (req,res) => {
    const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
    );
-   const options = {
-        httpOnly: true,
-        secure: true,
+//    const options = {
+//         httpOnly: true,
+//         secure: true,
 
-   }
+//    }
+
+const options = {
+    httpOnly: true,          // Prevent JS access (for security)
+    secure: false,           // Set to true only if using HTTPS
+    sameSite: 'Lax',
+    path: '/'         // or 'None' if cross-site; 'Lax' is usually fine for SPA
+  };
    return res.status(200)
    .cookie('refreshToken', refreshToken, options)
    .cookie('accessToken', accessToken, options)    
@@ -124,9 +133,10 @@ const loginUser = asyncHandler(async (req,res) => {
    )
 
 });
-
-const logoutUser = asyncHandler(async (req,res) => {
-    await User.findOneAndUpdate(
+const logoutUser = asyncHandler(async (req, res) => {
+    // Change findOneAndUpdate to findByIdAndUpdate which expects an ID directly
+    // OR change the first parameter to be a filter object: { _id: req.user._id }
+    await User.findByIdAndUpdate(
         req.user._id,
         {
             $set: {
@@ -136,21 +146,26 @@ const logoutUser = asyncHandler(async (req,res) => {
         {
             new: true
         }
-    )
-    const options = {
-        httpOnly: true,
-        secure: true,
-    }
-
-    return res
-    .status(200)
-    .clearCookie('refreshToken', options)
-    .clearCookie('accessToken', options)
-    .json(
-        new ApiResponse(200, {}, "User logged out successfully")
     );
-
-})
+    
+    const options = {
+        httpOnly: true,          // Prevent JS access (for security)
+        secure: false,           // Set to true only if using HTTPS
+        sameSite: 'Lax',
+        path: '/'         // or 'None' if cross-site; 'Lax' is usually fine for SPA
+    };
+    
+    console.log("🍪 Cookies:", req.cookies);
+    console.log("🧾 Authorization Header:", req.headers.authorization);
+    
+    return res
+        .status(200)
+        .clearCookie('refreshToken', options)
+        .clearCookie('accessToken', options)
+        .json(
+            new ApiResponse(200, {}, "User logged out successfully")
+        );
+});
 
 const refreshAccessToken = asyncHandler(async (req,res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
@@ -171,10 +186,17 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
             throw new ApiError(401, "Invalid refresh token")
         }
         const {accessToken, newRefreshToken} = await generateAccessTokenAndRefreshToken(user._id);
+        // const options = {
+        //     httpOnly: true,
+        //     secure: true,
+        // }
         const options = {
-            httpOnly: true,
-            secure: true,
-        }
+            httpOnly: true,          // Prevent JS access (for security)
+            secure: false,           // Set to true only if using HTTPS
+            sameSite: 'Lax',
+            path: '/'         // or 'None' if cross-site; 'Lax' is usually fine for SPA
+        };
+
         return res
         .status(200)
         .cookie('refreshToken', newRefreshToken, options)
