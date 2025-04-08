@@ -134,39 +134,29 @@ const options = {
 
 });
 const logoutUser = asyncHandler(async (req, res) => {
-    // Change findOneAndUpdate to findByIdAndUpdate which expects an ID directly
-    // OR change the first parameter to be a filter object: { _id: req.user._id }
     await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set: {
-                refreshToken: undefined
-            }
-        },
-        {
-            new: true
-        }
+      req.user._id,
+      { $set: { refreshToken: undefined } },
+      { new: true }
     );
-    
+  
     const options = {
-        httpOnly: true,          // Prevent JS access (for security)
-        secure: false,           // Set to true only if using HTTPS
-        sameSite: 'Lax',
-        path: '/'         // or 'None' if cross-site; 'Lax' is usually fine for SPA
+      httpOnly: true,
+      secure: false, // Set to true in production with HTTPS
+      sameSite: "Lax",
+      path: "/"
     };
-    
+  
     console.log("🍪 Cookies:", req.cookies);
     console.log("🧾 Authorization Header:", req.headers.authorization);
-    
+  
     return res
-        .status(200)
-        .clearCookie('refreshToken', options)
-        .clearCookie('accessToken', options)
-        .json(
-            new ApiResponse(200, {}, "User logged out successfully")
-        );
-});
-
+      .status(200)
+      .clearCookie("refreshToken", options)
+      .clearCookie("accessToken", options)
+      .json(new ApiResponse(200, {}, "User logged out successfully"));
+  });
+  
 const refreshAccessToken = asyncHandler(async (req,res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.header("Authorization")?.replace("Bearer ", "");
     if(!incomingRefreshToken){
