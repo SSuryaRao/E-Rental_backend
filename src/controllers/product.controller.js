@@ -106,4 +106,33 @@ const productDetails = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, "product fetched successfully", products));
 });
 
-export { registerProduct, productDetails };
+const allProducts = asyncHandler(async(req,res) =>{
+    const products = await Product.find({})
+    .populate("categoryID", "name")
+    .populate("sellerID", "storeName gstNumber address")
+    .exec();
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,"All the products fetched successfully", products))
+})
+
+const productByID = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get product ID from URL parameters
+
+    if (!id) {
+        throw new ApiError(400, "Product ID is required.");
+    }
+
+    const product = await Product.findById(id)
+        .populate("categoryID", "name")
+        .populate("sellerID", "storeName gstNumber address")
+        .exec();
+
+    if (!product) {
+        throw new ApiError(404, "Product not found.");
+    }
+
+    return res.status(200).json(new ApiResponse(200, "Product fetched successfully", product));
+});
+export { registerProduct, productDetails, allProducts, productByID };
