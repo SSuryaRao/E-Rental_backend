@@ -10,10 +10,19 @@ app.use(express.json({limit: '20kb'}));
 app.use(express.urlencoded({extended: true,limit: '20kb'}));
 app.use(express.static("public"));
 app.use(cookieParser());
+const allowedOrigins = process.env.ORIGIN_URL.split(',');
+
 app.use(cors({
-    origin: process.env.ORIGIN_URL,
-    credentials: true
-}))
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 // routes
 import { userRouter } from './routes/user.routes.js';
 import { sellerRouter } from './routes/seller.routes.js';
