@@ -57,4 +57,6 @@ const sellerDetails = asyncHandler(async(req,res) => {
     )
 })
 
+
+
 export { registerSeller, sellerDetails};

@@ -71,16 +71,95 @@ const getCart = asyncHandler(async (req, res) => {
       return res.status(200).json(new ApiResponse(200, "Cart is empty", []));
     }
   
-    const formattedCart = cart.items.map(item => ({
-      productId: item.productID._id,
-      productName: item.productID.name,
-      productImage: item.productID.image,
-      price: item.productID.price,
-      quantity: item.quantity
-    }));
+    const formattedCart = cart.items
+  .filter(item => item.productID !== null)  // Filter out deleted products
+  .map(item => ({
+    productId: item.productID._id,
+    productName: item.productID.name,
+    productImage: item.productID.image,
+    price: item.productID.price,
+    quantity: item.quantity
+  }));
   
     return res.status(200).json(new ApiResponse(200, "Cart fetched successfully", formattedCart));
   });
   
+  const removeItemFromCart = asyncHandler(async (req, res) => {
+    const userDetails = req.user;
+    const { productId } = req.body;
 
-export { addToCart, getCart };
+    if (!userDetails) {
+        throw new ApiError(401, "Unauthorized: User not found");
+    }
+
+    if (!productId) {
+        throw new ApiError(400, "Product ID is required");
+    }
+
+    const userId = userDetails._id;
+
+    // Find the cart
+    const cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+        throw new ApiError(404, "Cart not found");
+    }
+
+    const itemIndex = cart.items.findIndex(
+        item => item.productID.toString() === productId
+    );
+
+    if (itemIndex === -1) {
+        throw new ApiError(404, "Product not found in cart");
+    }
+
+    // Remove the item from the cart
+    cart.items.splice(itemIndex, 1);
+    await cart.save();
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, "Product removed from cart successfully", cart));
+});
+
+const updateCartItemQuantity = asyncHandler(async (req, res) => {
+    const userDetails = req.user;
+    const { productId, quantity } = req.body;
+  
+    if (!userDetails) {
+      throw new ApiError(401, "Unauthorized: User not found");
+    }
+  
+    if (!productId || typeof quantity !== "number") {
+      throw new ApiError(400, "Product ID and quantity are required");
+    }
+  
+    if (quantity < 1) {
+      throw new ApiError(400, "Quantity must be at least 1");
+    }
+  
+    const userId = userDetails._id;
+  
+    // Find the user's cart
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      throw new ApiError(404, "Cart not found");
+    }
+  
+    // Locate the item
+    const itemIndex = cart.items.findIndex(
+      item => item.productID.toString() === productId
+    );
+    if (itemIndex === -1) {
+      throw new ApiError(404, "Product not found in cart");
+    }
+  
+    // Update quantity
+    cart.items[itemIndex].quantity = quantity;
+    await cart.save();
+  
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Quantity updated successfully", cart));
+  });
+export { addToCart, getCart, removeItemFromCart, updateCartItemQuantity };

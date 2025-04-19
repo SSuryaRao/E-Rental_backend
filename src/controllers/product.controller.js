@@ -135,4 +135,25 @@ const productByID = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, "Product fetched successfully", product));
 });
-export { registerProduct, productDetails, allProducts, productByID };
+
+const deleteProduct = asyncHandler(async(req,res) =>{
+    const {productId} = req.params;
+
+    if(!productId){
+        throw new ApiError(404,"productId is required ")
+    }
+    const product = await Product.findByIdAndDelete(productId)
+
+    if(!product){
+        throw new ApiError(404,"product not found or error in deleting from database ")
+    }
+    await Cart.updateMany(
+        {},
+        { $pull: { items: { productID: productId } } }
+      );
+      return res.status(200).json(
+        new ApiResponse(200, "Product deleted and removed from all carts")
+      );
+})
+
+export { registerProduct, productDetails, allProducts, productByID, deleteProduct };
