@@ -80,6 +80,8 @@ const registerProduct = asyncHandler(async (req, res) => {
 const productDetails = asyncHandler(async (req, res) => {
     const { name, description } = req.body;
 
+    
+
     if (!name && !description) {
         throw new ApiError(400, "at least one field is required");
     }
@@ -111,6 +113,33 @@ const allProducts = asyncHandler(async(req,res) =>{
     .populate("categoryID", "name")
     .populate("sellerID", "storeName gstNumber address")
     .exec();
+    
+
+    // async function seedCategories() {
+    //     const predefinedCategories = ['Electronics', 'TV','Fridge','Furniture'];
+    
+    //     // Check if any of the predefined categories are missing
+    //     const existingCategories = await Category.find({ name: { $in: predefinedCategories } }).select('name');
+    //     const existingNames = existingCategories.map(cat => cat.name);
+    
+    //     const categoriesToInsert = predefinedCategories.filter(name => !existingNames.includes(name));
+    
+    //     if (categoriesToInsert.length === 0) {
+    //         console.log('All predefined categories already exist. Skipping seeding.');
+    //         return;
+    //     }
+    
+    //     // Insert the missing categories
+    //     for (const name of categoriesToInsert) {
+    //         await Category.create({ name });
+    //         console.log(`Inserted category: ${name}`);
+    //     }
+    // }
+    
+    // seedCategories();
+
+
+
 
     return res
     .status(200)
