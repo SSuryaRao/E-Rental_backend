@@ -2,19 +2,27 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
-const app=express();
+import { paymentRouter } from './routes/payment.routes.js';
+import { userRouter } from './routes/user.routes.js';
+import { sellerRouter } from './routes/seller.routes.js';
+import { productRouter } from './routes/product.routes.js';
+import { cartRouter } from './routes/cart.routes.js';
 
+const app = express();
 
-
-app.use(express.json({limit: '20kb'}));
-app.use(express.urlencoded({extended: true,limit: '20kb'}));
+// Middleware
+app.use(express.json({ limit: '20kb' }));
+app.use(express.urlencoded({ extended: true, limit: '20kb' }));
 app.use(express.static("public"));
 app.use(cookieParser());
-const allowedOrigins = process.env.ORIGIN_URL.split(',');
+
+// ✅ CORS Config
+const allowedOrigins = process.env.ORIGIN_URL
+  ? process.env.ORIGIN_URL.split(',')
+  : ['http://localhost:5173']; // React default port
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -23,16 +31,12 @@ app.use(cors({
   },
   credentials: true
 }));
-// routes
-import { userRouter } from './routes/user.routes.js';
-import { sellerRouter } from './routes/seller.routes.js';
-import { productRouter } from './routes/product.routes.js';
-import { cartRouter } from './routes/cart.routes.js';
 
-app.use('/api/v1/user',userRouter);
-app.use('/api/v1/seller',sellerRouter);
-app.use('/api/v1/product',productRouter);
-app.use('/api/v1/cart',cartRouter);
+// ✅ API Routes
+app.use('/api/v1/user', userRouter);
+app.use('/api/v1/seller', sellerRouter);
+app.use('/api/v1/product', productRouter);
+app.use('/api/v1/cart', cartRouter);
+app.use('/api/v1/payments', paymentRouter);
 
-
-export { app }
+export { app };
